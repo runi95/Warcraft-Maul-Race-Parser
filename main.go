@@ -13,7 +13,7 @@ import (
 
 var baseUnitMap map[string]*models.SLKUnit
 var unitFuncMap map[string]*models.UnitFunc
-var builders []*Unit
+var builders []*UnitRaw
 
 type Unit struct {
 	Name        string
@@ -21,6 +21,13 @@ type Unit struct {
 	Description string
 	Builds      []*Unit
 	Upgrades    []*Unit
+}
+
+type UnitRaw struct {
+	SLKUnit  *models.SLKUnit
+	UnitFunc *models.UnitFunc
+	Upgrades []*UnitRaw
+	Builds   []*UnitRaw
 }
 
 func main() {
@@ -61,6 +68,21 @@ func buildUnit(unitId string) *Unit {
 	return &Unit{unitFuncBuild.Name.String, unitFuncBuild.Art.String, unitFuncBuild.Description.String, nil, upgrades}
 }
 
+func buildRawUnit(unitId string) *UnitRaw {
+	unitFuncBuild := unitFuncMap[unitId]
+	baseUnitBuild := baseUnitMap[unitId]
+	var upgrades []*UnitRaw
+	if unitFuncBuild.Upgrade.Valid {
+		unitUpgrades := unitFuncBuild.Upgrade.String
+		upgradeSplit := strings.Split(unitUpgrades, ",")
+		for _, unitUpgrade := range upgradeSplit {
+			upgrades = append(upgrades, buildRawUnit(unitUpgrade))
+		}
+	}
+
+	return &UnitRaw{baseUnitBuild, unitFuncBuild, upgrades, nil}
+}
+
 func findBuilders() {
 	for key := range baseUnitMap {
 		// log.Println(baseUnitMap[key].UnitBalance.Type.String)
@@ -69,14 +91,15 @@ func findBuilders() {
 		for _, unitType := range split {
 			if strings.ToLower(unitType) == "peon" && strings.ToLower(unitFuncMap[key].Name.String) != "weeiz" {
 				unitFunc := unitFuncMap[key]
-				var builds []*Unit
+				slkUnit := baseUnitMap[key]
+				var builds []*UnitRaw
 				unitBuilds := unitFunc.Builds.String
 				buildSplit := strings.Split(strings.Trim(unitBuilds, "\""), ",")
 				for _, unitBuild := range buildSplit {
-					builds = append(builds, buildUnit(unitBuild))
+					builds = append(builds, buildRawUnit(unitBuild))
 				}
 
-				builders = append(builders, &Unit{unitFunc.Name.String, unitFunc.Art.String, unitFunc.Description.String, builds, nil})
+				builders = append(builders, &UnitRaw{slkUnit, unitFunc, nil, builds})
 			}
 		}
 	}
