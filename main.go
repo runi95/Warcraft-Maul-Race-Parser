@@ -76,7 +76,9 @@ func buildRawUnit(unitId string) *UnitRaw {
 		unitUpgrades := unitFuncBuild.Upgrade.String
 		upgradeSplit := strings.Split(unitUpgrades, ",")
 		for _, unitUpgrade := range upgradeSplit {
-			upgrades = append(upgrades, buildRawUnit(unitUpgrade))
+			if len(unitUpgrade) > 0 {
+				upgrades = append(upgrades, buildRawUnit(unitUpgrade))
+			}
 		}
 	}
 
@@ -96,7 +98,9 @@ func findBuilders() {
 				unitBuilds := unitFunc.Builds.String
 				buildSplit := strings.Split(strings.Trim(unitBuilds, "\""), ",")
 				for _, unitBuild := range buildSplit {
-					builds = append(builds, buildRawUnit(unitBuild))
+					if len(unitBuild) > 0 {
+						builds = append(builds, buildRawUnit(unitBuild))
+					}
 				}
 
 				builders = append(builders, &UnitRaw{slkUnit, unitFunc, nil, builds})
