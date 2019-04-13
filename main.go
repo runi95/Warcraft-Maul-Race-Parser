@@ -91,7 +91,7 @@ func findBuilders() {
 		unitTypes := baseUnitMap[key].UnitBalance.Type.String
 		split := strings.Split(strings.Trim(unitTypes, "\""), ",")
 		for _, unitType := range split {
-			if strings.ToLower(unitType) == "peon" && strings.ToLower(unitFuncMap[key].Name.String) != "weeiz" {
+			if strings.ToLower(unitType) == "peon" {
 				unitFunc := unitFuncMap[key]
 				slkUnit := baseUnitMap[key]
 				var builds []*UnitRaw
